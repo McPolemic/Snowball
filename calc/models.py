@@ -10,11 +10,7 @@ class Account(models.Model):
     minimum_payment = models.DecimalField(max_digits=9, decimal_places=2)
 
     def __unicode__(self):
-<<<<<<< Updated upstream
         return '%s - %s' % (self.user.username, self.name)
-=======
-        return '%s - %s' % (self.user.name, self.name)
->>>>>>> Stashed changes
 
 class Transaction(models.Model):
     user = models.ForeignKey(User)
