@@ -8,7 +8,7 @@ class Account(models.Model):
     minimum_payment = models.DecimalField(max_digits=9, decimal_places=2)
 
     def __unicode__(self):
-        return name
+        return self.name
 
 class Transaction(models.Model):
     account = models.ForeignKey(Account)
@@ -16,4 +16,5 @@ class Transaction(models.Model):
     amount = models.DecimalField(max_digits=9, decimal_places=2)
 
     def __unicode__(self):
-        return '%d/%d/%d - %s' % (date.month, date.day, date.year, account.name)
+        d = self.date
+        return '%d/%d/%d - %s' % (self.d.month, self.d.day, self.d.year, self.account.name)
