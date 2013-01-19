@@ -30,9 +30,19 @@ var TransactionList = Backbone.Collection.extend({
 
 var AccountListView = Backbone.View.extend({
 	tagName: 'div',
-	id: 'accountList'
+	id: 'accountList',
+
+	initialize: function(){
+		this.model.on( 'change', this.render, this );
+	},
+
+	template: _.template('<li>test item</li>'),
+
+	render: function(){
+		this.$el.html(this.template(this.model.toJSON()));
+		return this;
+	}
 });
-// Need to create views for everything
 
 var CalcApp = Backbone.Router.extend({
 	routes: {
@@ -41,8 +51,11 @@ var CalcApp = Backbone.Router.extend({
 	},
 
 	initialize: function(){
-		// This needs to be pointing at an account list, not a specific account
 		this.accountList = new AccountList();
+		this.accountListView = new AccountListView({
+			model: accountList,
+			url: /api/account
+		});
 	},
 
 	start: function(){
