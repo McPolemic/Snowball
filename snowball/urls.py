@@ -1,8 +1,12 @@
 from django.conf.urls import patterns, include, url
+from django.conf.urls.defaults import *
+from calc.api import AccountResource
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 admin.autodiscover()
+
+account_resource = AccountResource()
 
 urlpatterns = patterns('',
     # Examples:
@@ -14,4 +18,6 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
+
+    url(r'^api/', include(account_resource.urls)),
 )
