@@ -16,5 +16,4 @@ class Transaction(models.Model):
     amount = models.DecimalField(max_digits=9, decimal_places=2)
 
     def __unicode__(self):
-        d = self.date
-        return '%d/%d/%d - %s - $%0.2f' % (d.month, d.day, d.year, self.account.name, self.amount)
+        return '%s - %s - $%0.2f' % (self.date.strftime('%m/%d/%y'), self.account.name, self.amount)
