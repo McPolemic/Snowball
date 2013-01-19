@@ -6,3 +6,6 @@
 # *~
 settings.py
 *.pyc
+
+# SublimeText 2
+*.sublime-workspace
