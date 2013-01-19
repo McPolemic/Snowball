@@ -17,4 +17,4 @@ class Transaction(models.Model):
 
     def __unicode__(self):
         d = self.date
-        return '%d/%d/%d - %s' % (self.d.month, self.d.day, self.d.year, self.account.name)
+        return '%d/%d/%d - %s' % (d.month, d.day, d.year, self.account.name)
