@@ -25,7 +25,7 @@ window.TastypieCollection = Backbone.Collection.extend({
 });
 
 var Account = TastypieModel.extend({
-	urlRoot: '/api/accounts',
+	urlRoot: '/api/v1/accounts',
 
 	defaults: {
 		name: 'Default name',
@@ -38,10 +38,12 @@ var Account = TastypieModel.extend({
 });
 
 var AccountList = TastypieCollection.extend({
-	url: '/api/accounts'
+	url: '/api/v1/accounts',
 });
 
 var Transaction = TastypieModel.extend({
+	urlRoot: '/api/v1/transactions',
+
 	defaults: {
 		account_id: 0,
 		date: '01/01/0101',
@@ -49,8 +51,10 @@ var Transaction = TastypieModel.extend({
 	}
 });
 
-var TransactionList = Backbone.Collection.extend({
-	url: '/transactions'
+
+var TransactionList = TastypieCollection.extend({
+	url: '/api/v1/transactions',
+	model: Transaction
 });
 
 
