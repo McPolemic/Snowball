@@ -1,4 +1,11 @@
 
+// The following two methods were required to make backbone.js and 
+// tastypie-django work together
+//
+// They were written by Daniel Lindsley and publicly posted
+// on Patrick Altman's blog
+// http://paltman.com/2012/04/30/integration-backbonejs-tastypie/
+
 window.TastypieModel = Backbone.Model.extend({
     base_url: function() {
       var temp_url = Backbone.Model.prototype.url.call(this);
