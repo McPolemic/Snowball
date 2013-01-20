@@ -2,6 +2,8 @@ from django.conf.urls import patterns, include, url
 from django.conf.urls.defaults import *
 from calc.api import AccountResource
 
+import calc.views
+
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 admin.autodiscover()
@@ -20,4 +22,6 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
 
     url(r'^api/', include(account_resource.urls)),
+
+    url(r'^/*$', calc.views.calc_main_view),
 )
