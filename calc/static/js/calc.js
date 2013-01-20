@@ -17,12 +17,14 @@ window.TastypieModel = Backbone.Model.extend({
     }
 });
 
+
 window.TastypieCollection = Backbone.Collection.extend({
     parse: function(response) {
         this.recent_meta = response.meta || {};
         return response.objects || response;
     }
 });
+
 
 var Account = TastypieModel.extend({
 	urlRoot: '/api/v1/accounts',
@@ -136,6 +138,8 @@ var TransactionListView = Backbone.Collection.extend({
 	}
 });
 
+
+// Router handling the models and initial fetches
 var CalcApp = Backbone.Router.extend({
 	routes: {
 		'': 'index',
@@ -158,8 +162,9 @@ var CalcApp = Backbone.Router.extend({
 	}
 });
 
-var calcApp = new CalcApp();
 
+// Create and start the app
+var calcApp = new CalcApp();
 $(function(){
 	calcApp.start();
 });
