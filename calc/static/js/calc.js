@@ -37,9 +37,48 @@ var Account = TastypieModel.extend({
 	}
 });
 
+
 var AccountList = TastypieCollection.extend({
 	url: '/api/v1/accounts',
+	model: Account
 });
+
+
+var AccountView = Backbone.View.extend({
+	tagName: 'li',
+
+	template: _.template('<%= name %> - <%= interest_rate %>%'),
+
+	render: function(){
+		this.$el.html(this.template(this.model.toJSON()));
+		return this;
+	}
+});
+
+
+var AccountListView = Backbone.View.extend({
+	el: '#accountList',
+
+	initialize: function(){
+		this.collection.on('add', this.addOne, this);
+		this.collection.on('reset', this.addAll, this);
+	},
+
+	addOne: function(accountItem){
+		var accountView = new AccountView({model: accountItem});
+		this.$el.append(accountView.render().el);
+	},
+
+	addAll: function(){
+		this.collection.forEach(this.addOne, this);
+	},
+
+	render: function(){
+		this.addAll();
+		return this;
+	}
+});
+
 
 var Transaction = TastypieModel.extend({
 	urlRoot: '/api/v1/transactions',
