@@ -48,7 +48,9 @@ var TransactionList = Backbone.Collection.extend({
 
 
 var AccountView = Backbone.View.extend({
-	template: _.template('<li><%= name %> - <%= interest_rate %>%</li>'),
+	tagName: 'li',
+
+	template: _.template('<%= name %> - <%= interest_rate %>%'),
 
 	render: function(){
 		this.$el.html(this.template(this.model.toJSON()));
