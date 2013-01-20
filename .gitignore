@@ -8,5 +8,6 @@ local_settings.py
 *.pyc
 *.db
 venv
+.DS_Store
 # SublimeText 2
 *.sublime-workspace

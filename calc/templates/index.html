@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<html lang="en">
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -6,23 +7,38 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
         <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
-
-<!--        <link rel="stylesheet" href="calc/static/css/normalize.min.css">
-        <link rel="stylesheet" href="calc/static/css/main.css">
-
-        <script src="calc/static/js/vendor/modernizr-2.6.2.min.js"></script>  -->
+        <style type="text/css">
+body {
+    background-color: ##e1f4ff;
+}
+        </style>
     </head>
     <body>
-        <ul id="accountList"></ul>
-
+        <div class="container">
+            <div class="navbar">
+                <div class="navbar-inner">
+                    <img src="/static/img/snowball.png" alt="Snowball" width="30" height="30" style="float:left;margin-right: 6px;margin-top:4px;">
+                    <a href="#" class="brand">Snowball</a>
+                    <ul class="nav">
+                        <li><a href="#">Accounts</a></li>
+                        <li><a href="#">Transactions</a></li>
+                        <li><a href="#">Debt Snowball</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <div class="span12">
+                    {% block body %}
+                    <p>index.html</p>
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
         <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-        <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.8.3.min.js"><\/script>')</script>
-
         <script src="static/js/underscore.js"></script>
         <script src="static/js/json2.js"></script>
         <script src="static/js/backbone.js"></script>
         <script src="static/js/calc.js"></script>
-
     </body>
 </html>
