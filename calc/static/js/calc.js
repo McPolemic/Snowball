@@ -97,10 +97,10 @@ var TransactionList = TastypieCollection.extend({
 });
 
 
-var AccountView = Backbone.View.extend({
+var TransactionView = Backbone.View.extend({
 	tagName: 'li',
 
-	template: _.template('<%= name %> - <%= interest_rate %>%'),
+	template: _.template('<%= account %>'),
 
 	render: function(){
 		this.$el.html(this.template(this.model.toJSON()));
@@ -108,19 +108,22 @@ var AccountView = Backbone.View.extend({
 	}
 });
 
-var AccountListView = Backbone.View.extend({
-	el: '#accountList',
 
-	template: _.template('<li>test item</li>'),
+var TransactionListView = Backbone.Collection.extend({
+	el: '#transactionList',
+
+	defaults: {
+		account_id: 0
+	},
 
 	initialize: function(){
 		this.collection.on('add', this.addOne, this);
 		this.collection.on('reset', this.addAll, this);
 	},
 
-	addOne: function(accountItem){
-		var accountView = new AccountView({model: accountItem});
-		this.$el.append(accountView.render().el);
+	addOne: function(transaction){
+		var transactionView = new TransactionView({model: transaction});
+		this.$el.append(transactionView.render().el);
 	},
 
 	addAll: function(){
