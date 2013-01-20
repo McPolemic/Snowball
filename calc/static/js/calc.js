@@ -1,5 +1,25 @@
 
-var Account = Backbone.Model.extend({
+window.TastypieModel = Backbone.Model.extend({
+    base_url: function() {
+      var temp_url = Backbone.Model.prototype.url.call(this);
+      return (temp_url.charAt(temp_url.length - 1) == '/' ? temp_url : temp_url+'/');
+    },
+
+    url: function() {
+      return this.base_url();
+    }
+});
+
+window.TastypieCollection = Backbone.Collection.extend({
+    parse: function(response) {
+        this.recent_meta = response.meta || {};
+        return response.objects || response;
+    }
+});
+
+var Account = TastypieModel.extend({
+	urlRoot: '/api/accounts',
+
 	defaults: {
 		name: 'Default name',
 		initial_balance: 0.00,
@@ -10,12 +30,11 @@ var Account = Backbone.Model.extend({
 	}
 });
 
-var AccountList = Backbone.Collection.extend({
-	model: Account,
-	url: '/accounts'
+var AccountList = TastypieCollection.extend({
+	url: '/api/accounts'
 });
 
-var Transaction = Backbone.Model.extend({
+var Transaction = TastypieModel.extend({
 	defaults: {
 		account_id: 0,
 		date: '01/01/0101',
@@ -24,22 +43,40 @@ var Transaction = Backbone.Model.extend({
 });
 
 var TransactionList = Backbone.Collection.extend({
-	model: Transaction,
 	url: '/transactions'
 });
 
-var AccountListView = Backbone.View.extend({
-	tagName: 'div',
-	id: 'accountList',
 
-	initialize: function(){
-		this.model.on( 'change', this.render, this );
-	},
-
-	template: _.template('<li>test item</li>'),
+var AccountView = Backbone.View.extend({
+	template: _.template('<li><%= name %> - <%= interest_rate %>%</li>'),
 
 	render: function(){
 		this.$el.html(this.template(this.model.toJSON()));
+		return this;
+	}
+});
+
+var AccountListView = Backbone.View.extend({
+	el: '#accountList',
+
+	template: _.template('<li>test item</li>'),
+
+	initialize: function(){
+		this.collection.on('add', this.addOne, this);
+		this.collection.on('reset', this.addAll, this);
+	},
+
+	addOne: function(accountItem){
+		var accountView = new AccountView({model: accountItem});
+		this.$el.append(accountView.render().el);
+	},
+
+	addAll: function(){
+		this.collection.forEach(this.addOne, this);
+	},
+
+	render: function(){
+		this.addAll();
 		return this;
 	}
 });
@@ -53,8 +90,7 @@ var CalcApp = Backbone.Router.extend({
 	initialize: function(){
 		this.accountList = new AccountList();
 		this.accountListView = new AccountListView({
-			model: accountList,
-			url: /api/account
+			collection: this.accountList
 		});
 	},
 
@@ -63,7 +99,7 @@ var CalcApp = Backbone.Router.extend({
 	},
 
 	index: function(){
-		this.account.fetch();
+		this.accountList.fetch();
 	}
 });
 
