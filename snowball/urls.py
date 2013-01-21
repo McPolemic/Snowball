@@ -1,5 +1,6 @@
 from django.conf.urls import patterns, include, url
 from django.conf.urls.defaults import *
+from django.contrib.auth.views import login, logout
 
 from tastypie.api import Api
 from calc.api import AccountResource, TransactionResource
@@ -28,4 +29,6 @@ urlpatterns = patterns('',
     url(r'^api/', include(v1_api.urls)),
 
     url(r'^/*$', calc.views.calc_main_view),
+    url(r'^accounts/login/$', login),
+    url(r'^accounts/logout/$', logout),
 )
