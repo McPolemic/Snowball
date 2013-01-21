@@ -35,7 +35,7 @@ var AccountList = Backbone.Tastypie.Collection.extend({
 var AccountView = Backbone.View.extend({
 	template: jsTemplates['accountView/nested'],
 
-	events: {'click': 'toggleTransactions'},
+	events: {'click a': 'handleClick'},
 
 	initialize: function(){
 		// Create unique id for the element
@@ -52,38 +52,14 @@ var AccountView = Backbone.View.extend({
 
 	render: function(){
 		this.$el.attr('id', 'account'+this.model.id).html(this.template(this.model.toJSON()));
-		this.$el.append('<span/>');
-		this.$el.find('span').addClass('transactionList');
-
-		if (this.showTransactions == true )
-		{
-			this.transactionListView.render();
-		}
-
 		return this;
 	},
 
-	toggleTransactions: function(){
-		this.showTransactions = !this.showTransactions;
-
-		if (this.showTransactions == true)
-		{
-			if( this.transactionListView == null )
-			{
-				// Prepare view for transaction list
-				this.transactionListView = new TransactionListView({
-					collection: this.model.transactions,
-					accountId: this.model.id
-				});
-			};
-
-			// FIXME - Should we have the transation list view determing if itself
-			//         is visible, or should we decide for it?
-			// this.transactionListView.trigger('toggleAll');
-			this.model.transactions.fetch({update: true});
-		}
-
-		this.render();
+	handleClick: function(event){
+		event.preventDefault();
+		var url_ref = $(event.target).attr('href');
+		console.log(url_ref);
+		calcApp.navigate(url_ref, {trigger: true});
 	}
 });
 
@@ -105,6 +81,7 @@ var AccountListView = Backbone.View.extend({
 	},
 
 	addAll: function(){
+		this.$el.html('');
 		this.collection.forEach(this.addOne, this);
 	},
 
@@ -177,11 +154,43 @@ var TransactionListView = Backbone.View.extend({
 });
 
 
+var MainTransactionListView = Backbone.View.extend({
+	el: '#accountList',
+
+	defaults: {
+		account_id: 0
+	},
+
+	initialize: function(){
+		this.collection.on('add', this.addOne, this);
+		this.collection.on('reset', this.addAll, this);
+	},
+
+	addOne: function(transaction){
+		var transactionView = new TransactionView({model: transaction});
+		console.log(transactionView.render().el);
+		this.$el.append(transactionView.render().el);
+
+	},
+
+	addAll: function(){
+		this.$el.html('');
+		this.collection.forEach(this.addOne, this);
+	},
+
+	render: function(){
+		this.addAll();
+		return this;
+	}
+});
+
+
 // Router handling the models and initial fetches
 var CalcApp = Backbone.Router.extend({
 	routes: {
 		'': 'index',
-		'/': 'index'
+		'/': 'index',
+		'accounts/:id': 'showAccount'
 	},
 
 	initialize: function(){
@@ -197,9 +206,20 @@ var CalcApp = Backbone.Router.extend({
 
 	index: function(){
 		this.accountList.fetch();
+	},
+
+	showAccount: function(id){
+		this.currentAccount = this.accountList.get(id);
+		this.currentTList = new TransactionList({});
+		this.currentTList.url = '/api/v1/accounts/' + id + '/transactions/';
+
+		this.currentTLView = new MainTransactionListView({
+			collection: this.currentTList
+		});
+
+		this.currentTList.fetch();
 	}
 });
-
 
 // Create and start the app
 var calcApp = new CalcApp();
