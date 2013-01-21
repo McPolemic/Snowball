@@ -35,7 +35,7 @@ var AccountList = Backbone.Tastypie.Collection.extend({
 var AccountView = Backbone.View.extend({
 	tagName: 'li',
 
-	template: _.template('<%= name %> - <%= interest_rate %>%'),
+	template: jsTemplates['accountView/nested'],
 
 	events: {'click': 'toggleTransactions'},
 
@@ -134,7 +134,7 @@ var TransactionList = Backbone.Tastypie.Collection.extend({
 var TransactionView = Backbone.View.extend({
 	tagName: 'li',
 
-	template: _.template('<%= date %> - <%= amount %>'),
+	template: jsTemplates['transactionView/main'],
 
 	render: function(){
 		this.$el.html(this.template(this.model.toJSON()));
