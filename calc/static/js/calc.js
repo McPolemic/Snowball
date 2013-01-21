@@ -1,32 +1,4 @@
-
-// The following two methods were required to make backbone.js and 
-// tastypie-django work together
-//
-// They were written by Daniel Lindsley and publicly posted
-// on Patrick Altman's blog
-// http://paltman.com/2012/04/30/integration-backbonejs-tastypie/
-
-window.TastypieModel = Backbone.Model.extend({
-    base_url: function() {
-      var temp_url = Backbone.Model.prototype.url.call(this);
-      return (temp_url.charAt(temp_url.length - 1) == '/' ? temp_url : temp_url+'/');
-    },
-
-    url: function() {
-      return this.base_url();
-    }
-});
-
-
-window.TastypieCollection = Backbone.Collection.extend({
-    parse: function(response) {
-        this.recent_meta = response.meta || {};
-        return response.objects || response;
-    }
-});
-
-
-var Account = TastypieModel.extend({
+var Account = Backbone.Tastypie.Model.extend({
 	urlRoot: '/api/v1/accounts',
 
 	defaults: {
@@ -40,7 +12,7 @@ var Account = TastypieModel.extend({
 });
 
 
-var AccountList = TastypieCollection.extend({
+var AccountList = Backbone.Tastypie.Collection.extend({
 	url: '/api/v1/accounts',
 	model: Account,
 
@@ -94,7 +66,7 @@ var AccountListView = Backbone.View.extend({
 });
 
 
-var Transaction = TastypieModel.extend({
+var Transaction = Backbone.Tastypie.Model.extend({
 	urlRoot: '/api/v1/transactions',
 
 	defaults: {
@@ -105,7 +77,7 @@ var Transaction = TastypieModel.extend({
 });
 
 
-var TransactionList = TastypieCollection.extend({
+var TransactionList = Backbone.Tastypie.Collection.extend({
 	url: '/api/v1/transactions',
 	model: Transaction
 });
