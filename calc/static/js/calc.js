@@ -8,6 +8,12 @@ var Account = Backbone.Tastypie.Model.extend({
 		interest_rate: 0.00,
 		overpayments: true,
 		minimum_payment: 0.00
+	},
+
+	initialize: function(){
+		// Initialize tranactions array for this account
+		this.transactions = new TransactionList();
+		this.transactions.url = this.urlRoot + '/' + this.id + '/transactions/';
 	}
 });
 
@@ -31,13 +37,55 @@ var AccountView = Backbone.View.extend({
 
 	template: _.template('<%= name %> - <%= interest_rate %>%'),
 
+	events: {'click': 'toggleTransactions'},
+
 	initialize: function(){
+		// Create unique id for the element
+		this.id = 'Account' + this.model.id;
+
+		// Create link to this instance
+		this.model.view = this;
+
 		this.model.on('hide', this.remove, this);
+
+		this.transactionListView = null;
+		this.showTransactions = false;
 	},
 
 	render: function(){
-		this.$el.html(this.template(this.model.toJSON()));
+		this.$el.attr('id', 'account'+this.model.id).html(this.template(this.model.toJSON()));
+		this.$el.append('<span/>');
+		this.$el.find('span').addClass('transactionList');
+
+		if (this.showTransactions == true )
+		{
+			this.transactionListView.render();
+		}
+
 		return this;
+	},
+
+	toggleTransactions: function(){
+		this.showTransactions = !this.showTransactions;
+
+		if (this.showTransactions == true)
+		{
+			if( this.transactionListView == null )
+			{
+				// Prepare view for transaction list
+				this.transactionListView = new TransactionListView({
+					collection: this.model.transactions,
+					accountId: this.model.id
+				});
+			};
+
+			// FIXME - Should we have the transation list view determing if itself
+			//         is visible, or should we decide for it?
+			// this.transactionListView.trigger('toggleAll');
+			this.model.transactions.fetch({update: true});
+		}
+
+		this.render();
 	}
 });
 
@@ -86,7 +134,7 @@ var TransactionList = Backbone.Tastypie.Collection.extend({
 var TransactionView = Backbone.View.extend({
 	tagName: 'li',
 
-	template: _.template('<%= account %>'),
+	template: _.template('<%= date %> - <%= amount %>'),
 
 	render: function(){
 		this.$el.html(this.template(this.model.toJSON()));
@@ -96,20 +144,25 @@ var TransactionView = Backbone.View.extend({
 
 
 var TransactionListView = Backbone.View.extend({
-	el: '#transactionList',
+	el: '.transactionList',
 
 	defaults: {
 		account_id: 0
 	},
 
 	initialize: function(){
+		// Reinitialize el since the DOM has changed
+		this.elementString = '#account' + this.options.accountId + ' .transactionList'
+		this.setElement($(this.elementString));
+
 		this.collection.on('add', this.addOne, this);
 		this.collection.on('reset', this.addAll, this);
 	},
 
 	addOne: function(transaction){
 		var transactionView = new TransactionView({model: transaction});
-		this.$el.append(transactionView.render().el);
+		$(this.elementString).append(transactionView.render().el);
+
 	},
 
 	addAll: function(){
