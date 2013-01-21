@@ -42,7 +42,15 @@ var Account = TastypieModel.extend({
 
 var AccountList = TastypieCollection.extend({
 	url: '/api/v1/accounts',
-	model: Account
+	model: Account,
+
+	initialize: function(){
+		this.on('remove', this.hideModel);
+	},
+
+	hideModel: function(model){
+		model.trigger('hide');
+	}
 });
 
 
@@ -50,6 +58,10 @@ var AccountView = Backbone.View.extend({
 	tagName: 'li',
 
 	template: _.template('<%= name %> - <%= interest_rate %>%'),
+
+	initialize: function(){
+		this.model.on('hide', this.remove, this);
+	},
 
 	render: function(){
 		this.$el.html(this.template(this.model.toJSON()));
