@@ -33,8 +33,6 @@ var AccountList = Backbone.Tastypie.Collection.extend({
 
 
 var AccountView = Backbone.View.extend({
-	tagName: 'li',
-
 	template: jsTemplates['accountView/nested'],
 
 	events: {'click': 'toggleTransactions'},
@@ -99,7 +97,10 @@ var AccountListView = Backbone.View.extend({
 	},
 
 	addOne: function(accountItem){
-		var accountView = new AccountView({model: accountItem});
+		var accountView = new AccountView({
+			model: accountItem,
+			tagName: 'li'
+		});
 		this.$el.append(accountView.render().el);
 	},
 
