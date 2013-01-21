@@ -27,5 +27,7 @@ urlpatterns = patterns('',
 
     url(r'^api/', include(v1_api.urls)),
 
+    url(r'^accounts/$', calc.views.calc_main_view),
+    url(r'^accounts/\d+/$', calc.views.calc_main_view),
     url(r'^/*$', calc.views.calc_main_view),
 )

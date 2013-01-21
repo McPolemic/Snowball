@@ -57,15 +57,14 @@ var AccountView = Backbone.View.extend({
 
 	handleClick: function(event){
 		event.preventDefault();
-		var url_ref = $(event.target).attr('href');
-		console.log(url_ref);
+		var url_ref = $(event.target).attr('href') + '/';
 		calcApp.navigate(url_ref, {trigger: true});
 	}
 });
 
 
 var AccountListView = Backbone.View.extend({
-	el: '#accountList',
+	el: '#content',
 
 	initialize: function(){
 		this.collection.on('add', this.addOne, this);
@@ -155,7 +154,7 @@ var TransactionListView = Backbone.View.extend({
 
 
 var MainTransactionListView = Backbone.View.extend({
-	el: '#accountList',
+	el: '#content',
 
 	defaults: {
 		account_id: 0
@@ -190,14 +189,13 @@ var CalcApp = Backbone.Router.extend({
 	routes: {
 		'': 'index',
 		'/': 'index',
-		'accounts/:id': 'showAccount'
+		'accounts/': 'showAccountList',
+		'accounts/:id': 'showAccount',
+		'accounts/:id/': 'showAccount'
 	},
 
 	initialize: function(){
 		this.accountList = new AccountList();
-		this.accountListView = new AccountListView({
-			collection: this.accountList
-		});
 	},
 
 	start: function(){
@@ -205,10 +203,19 @@ var CalcApp = Backbone.Router.extend({
 	},
 
 	index: function(){
-		this.accountList.fetch();
+	},
+
+	showAccountList: function(){
+		this.accountList.fetch({update: true});
+
+		this.accountListView = new AccountListView({
+			collection: this.accountList
+		});
 	},
 
 	showAccount: function(id){
+		this.accountList.fetch({update: true});
+
 		this.currentAccount = this.accountList.get(id);
 		this.currentTList = new TransactionList({});
 		this.currentTList.url = '/api/v1/accounts/' + id + '/transactions/';
