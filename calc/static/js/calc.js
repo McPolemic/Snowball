@@ -95,7 +95,7 @@ var TransactionView = Backbone.View.extend({
 });
 
 
-var TransactionListView = Backbone.Collection.extend({
+var TransactionListView = Backbone.View.extend({
 	el: '#transactionList',
 
 	defaults: {
