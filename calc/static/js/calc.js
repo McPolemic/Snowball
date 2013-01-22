@@ -1,29 +1,13 @@
 var Account = Backbone.Tastypie.Model.extend({
-	urlRoot: '/api/v1/accounts',
-
-	defaults: {
-		name: 'Default name',
-		initial_balance: 0.00,
-		current_balance: 0.00,
-		interest_rate: 0.00,
-		overpayments: true,
-		minimum_payment: 0.00
-	},
-
-	initialize: function(){
-		// Initialize tranactions array for this account
-		this.transactions = new TransactionList();
-		this.transactions.url = this.urlRoot + '/' + this.id + '/transactions/';
-	}
+	initialize: function(){},
 });
 
 
 var AccountList = Backbone.Tastypie.Collection.extend({
-	url: '/api/v1/accounts',
 	model: Account,
 
 	initialize: function(){
-		this.on('remove', this.hideModel);
+		this.on('remove', this.hideModel, this);
 	},
 
 	hideModel: function(model){
@@ -32,8 +16,44 @@ var AccountList = Backbone.Tastypie.Collection.extend({
 });
 
 
+var AccountDetailView = Backbone.View.extend({
+	template: jsTemplates['accountDetailView/accountDetails'],
+
+	initialize: function(){
+		this.ready = false;
+
+		this.model.on('change', this.triggerReady, this);
+		this.model.on('ready', this.readyAndRender, this);
+	},
+
+	render: function(){
+		this.$el.html(this.template(this.model.toJSON()));
+	},
+
+	renderWhenReady: function(){
+		if (this.ready == true)
+		{
+			this.render();
+		}
+		{
+			this.model.fetch({update: true, success: this.triggerReady});
+		}
+	},
+
+	readyAndRender: function(){
+		this.ready = true;
+		this.render();
+	},
+
+	triggerReady: function(model){
+		model.trigger('ready');
+	}
+});
+
+
+
 var AccountView = Backbone.View.extend({
-	template: jsTemplates['accountView/nested'],
+	template: jsTemplates['accountView/main'],
 
 	events: {'click a': 'handleClick'},
 
@@ -58,13 +78,13 @@ var AccountView = Backbone.View.extend({
 	handleClick: function(event){
 		event.preventDefault();
 		var url_ref = $(event.target).attr('href') + '/';
-		calcApp.navigate(url_ref, {trigger: true});
+		calcApp.router.navigate(url_ref, {trigger: true});
 	}
 });
 
 
 var AccountListView = Backbone.View.extend({
-	el: '#content',
+	className: 'accountList',
 
 	initialize: function(){
 		this.collection.on('add', this.addOne, this);
@@ -128,52 +148,17 @@ var TransactionListView = Backbone.View.extend({
 	},
 
 	initialize: function(){
-		// Reinitialize el since the DOM has changed
-		this.elementString = '#account' + this.options.accountId + ' .transactionList'
-		this.setElement($(this.elementString));
-
 		this.collection.on('add', this.addOne, this);
 		this.collection.on('reset', this.addAll, this);
 	},
 
 	addOne: function(transaction){
 		var transactionView = new TransactionView({model: transaction});
-		$(this.elementString).append(transactionView.render().el);
-
-	},
-
-	addAll: function(){
-		this.collection.forEach(this.addOne, this);
-	},
-
-	render: function(){
-		this.addAll();
-		return this;
-	}
-});
-
-
-var MainTransactionListView = Backbone.View.extend({
-	el: '#content',
-
-	defaults: {
-		account_id: 0
-	},
-
-	initialize: function(){
-		this.collection.on('add', this.addOne, this);
-		this.collection.on('reset', this.addAll, this);
-	},
-
-	addOne: function(transaction){
-		var transactionView = new TransactionView({model: transaction});
-		console.log(transactionView.render().el);
 		this.$el.append(transactionView.render().el);
-
+		console.log('rendering addOne');
 	},
 
 	addAll: function(){
-		this.$el.html('');
 		this.collection.forEach(this.addOne, this);
 	},
 
@@ -185,7 +170,7 @@ var MainTransactionListView = Backbone.View.extend({
 
 
 // Router handling the models and initial fetches
-var CalcApp = Backbone.Router.extend({
+var CalcRouter = Backbone.Router.extend({
 	routes: {
 		'': 'index',
 		'/': 'index',
@@ -195,7 +180,6 @@ var CalcApp = Backbone.Router.extend({
 	},
 
 	initialize: function(){
-		this.accountList = new AccountList();
 	},
 
 	start: function(){
@@ -206,30 +190,88 @@ var CalcApp = Backbone.Router.extend({
 	},
 
 	showAccountList: function(){
-		this.accountList.fetch({update: true});
-
-		this.accountListView = new AccountListView({
-			collection: this.accountList
-		});
+		calcApp.showAccountList();
 	},
 
 	showAccount: function(id){
-		this.accountList.fetch({update: true});
-
-		this.currentAccount = this.accountList.get(id);
-		this.currentTList = new TransactionList({});
-		this.currentTList.url = '/api/v1/accounts/' + id + '/transactions/';
-
-		this.currentTLView = new MainTransactionListView({
-			collection: this.currentTList
-		});
-
-		this.currentTList.fetch();
+		calcApp.showAccountDetails(id);
 	}
 });
 
-// Create and start the app
-var calcApp = new CalcApp();
+
+// Create calcApp singleton
+var calcApp = {
+	currentSet: {},
+
+	run: function(){
+		// Set base_url for models and views to pull data
+		this.base_api_url = '/api/v1'
+
+		// Initialze base account collection
+		this.accountList = new AccountList();
+		this.accountList.url = this.base_api_url + '/accounts'
+
+		// Start the Backbone router
+		this.router = new CalcRouter();
+		this.router.start();
+	},
+
+	showAccountList: function(){
+		// If we have already created the accountListView,
+		// don't create it again, just re-render it.
+		if( this.accountListView == undefined )
+		{
+			this.accountListView = new AccountListView({
+				collection: this.accountList
+			});	
+		}
+
+		$('#content').html(this.accountListView.render().el);
+
+		// After we've rendered the "current" data, pull
+		// the data again to ensure we are actually current.
+		// This way, there isn't a delay after a user navigates
+		// to the page before content shows up.
+		this.accountList.fetch({update: true});
+	},
+
+	showAccountDetails: function(id){
+		// Set up the container
+		baseTemplate = jsTemplates['accountDetailView/base'],
+		$('#content').html(baseTemplate);
+
+		// Render the account details
+		this.currentSet.account = this.accountList.get(id);
+
+		if (this.currentSet.account == undefined)
+		{
+			this.currentSet.account = new Account({id: id});
+		};
+
+		this.currentSet.account.urlRoot = this.base_api_url + '/accounts/';
+
+		this.currentSet.accountDetailView = new AccountDetailView({model: this.currentSet.account});
+		this.currentSet.accountDetailView.setElement($('#accountDetails'));
+		this.currentSet.accountDetailView.renderWhenReady();
+
+		this.currentSet.account.fetch({update: true});
+
+		// Now render the transactions
+		var url = this.currentSet.account.urlRoot + id + '/transactions/';
+		this.currentSet.transactions = new TransactionList({url: url});
+		this.currentSet.transactions.url = url;
+
+		this.currentSet.transactionListView = new TransactionListView({
+			collection: this.currentSet.transactions
+		});
+		this.currentSet.transactionListView.setElement('#transactions');
+
+		this.currentSet.transactions.fetch();
+	}
+
+}
+
+// Once document is loaded, start the app
 $(function(){
-	calcApp.start();
+	calcApp.run();
 });
